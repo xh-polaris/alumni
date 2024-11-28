@@ -20,7 +20,7 @@ const (
 
 type IMongoMapper interface {
 	Insert(ctx context.Context, a *Activity) error
-	UpdateById(ctx context.Context, id string, a *Activity) error
+	Update(ctx context.Context, a *Activity) error
 	FindById(ctx context.Context, id string) (*Activity, error)
 	FindMany(ctx context.Context, p *basic.PaginationOptions) (activities []*Activity, total int64, err error)
 	DeleteById(ctx context.Context, id string) error
@@ -45,21 +45,23 @@ func (m *MongoMapper) Insert(ctx context.Context, a *Activity) error {
 	return err
 }
 
-func (m *MongoMapper) UpdateById(ctx context.Context, id string, a *Activity) error {
-	key := prefixKeyCacheKey + id
+func (m *MongoMapper) Update(ctx context.Context, a *Activity) error {
 	a.UpdateTime = time.Now()
-	_, err := m.conn.UpdateByID(ctx, key, id, a)
+	_, err := m.conn.UpdateByIDNoCache(ctx, a.ID, bson.M{"$set": a})
 	return err
 }
 
 func (m *MongoMapper) FindById(ctx context.Context, id string) (*Activity, error) {
-	key := prefixKeyCacheKey + id
-	var a *Activity
-	err := m.conn.FindOne(ctx, key, a, bson.M{consts.ID: id})
+	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, err
+		return nil, consts.ErrInvalidObjectId
 	}
-	return a, nil
+	var a Activity
+	err = m.conn.FindOneNoCache(ctx, &a, bson.M{consts.ID: oid})
+	if err != nil {
+		return nil, consts.ErrNotFound
+	}
+	return &a, nil
 }
 
 func (m *MongoMapper) FindMany(ctx context.Context, p *basic.PaginationOptions) (activities []*Activity, total int64, err error) {

@@ -13,6 +13,7 @@ const (
 	ActivityId   = "activity_id"
 	CheckIn      = "check_in"
 	Phone        = "phone"
+	Name         = "name"
 	DeleteStatus = 1
 	EffectStatus = 0
 )
@@ -31,5 +32,5 @@ const (
 // 默认值
 const (
 	DefaultCount = 10
-	AppId        = 14
+	AppId        = 15
 )

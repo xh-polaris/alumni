@@ -23,6 +23,7 @@ func Register(r *server.Hertz) {
 		_activity.POST("/create", append(_createactivityMw(), core_api.CreateActivity)...)
 		_activity.POST("/get", append(_getactivityMw(), core_api.GetActivity)...)
 		_activity.POST("/get_many", append(_getactivitiesMw(), core_api.GetActivities)...)
+		_activity.POST("/get_register", append(_getregistersMw(), core_api.GetRegisters)...)
 		_activity.POST("/register", append(_registeractivityMw(), core_api.RegisterActivity)...)
 		_activity.POST("/update", append(_updateactivityMw(), core_api.UpdateActivity)...)
 	}

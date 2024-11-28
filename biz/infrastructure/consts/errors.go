@@ -44,6 +44,7 @@ var (
 	ErrInvalidObjectId = NewErrno(codes.InvalidArgument, errors.New("无效的id "))
 	ErrCreate          = NewErrno(codes.Code(2001), errors.New("创建失败"))
 	ErrUpdate          = NewErrno(codes.Code(2002), errors.New("更新失败"))
+	ErrCount           = NewErrno(codes.Code(2003), errors.New("计数失败"))
 )
 
 // 工具错误

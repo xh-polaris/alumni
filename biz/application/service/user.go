@@ -4,12 +4,11 @@ import (
 	"context"
 	"github.com/google/wire"
 	"github.com/jinzhu/copier"
+	"github.com/xh-polaris/alumni-core_api/biz/adaptor"
 	"github.com/xh-polaris/alumni-core_api/biz/application/dto/alumni/core_api"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/util"
-	"github.com/xh-polaris/essay-show/biz/adaptor"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -193,6 +192,7 @@ func (u *UserService) UpdateEmployment(ctx context.Context, req *core_api.Update
 		employments = append(employments, e)
 	}
 
+	aUser.Employments = employments
 	err = u.UserMapper.Update(ctx, aUser)
 	if err != nil {
 		return nil, consts.ErrUpdate
@@ -216,7 +216,7 @@ func (u *UserService) GetUserInfo(ctx context.Context, req *core_api.GetUserInfo
 	}
 
 	homeEducations := make([]*core_api.Education, 0)
-	for _, edu := range aUser.ShanghaiEducations {
+	for _, edu := range aUser.HomeEducations {
 		var e core_api.Education
 		err2 := copier.Copy(&e, &edu)
 		if err2 != nil {

@@ -7,10 +7,11 @@
 package provider
 
 import (
-	"github.com/xh-polaris/essay-show/biz/application/service"
-	"github.com/xh-polaris/essay-show/biz/infrastructure/config"
-	"github.com/xh-polaris/essay-show/biz/infrastructure/mapper/log"
-	"github.com/xh-polaris/essay-show/biz/infrastructure/mapper/user"
+	"github.com/xh-polaris/alumni-core_api/biz/application/service"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/config"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/activity"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/register"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
 )
 
 // Injectors from wire.go:
@@ -24,15 +25,16 @@ func NewProvider() (*Provider, error) {
 	userService := service.UserService{
 		UserMapper: mongoMapper,
 	}
-	logMongoMapper := log.NewMongoMapper(configConfig)
-	essayService := service.EssayService{
-		LogMapper:  logMongoMapper,
-		UserMapper: mongoMapper,
+	activityMongoMapper := activity.NewMongoMapper(configConfig)
+	registerMongoMapper := register.NewMongoMapper(configConfig)
+	activityService := service.ActivityService{
+		ActivityMapper: activityMongoMapper,
+		RegisterMapper: registerMongoMapper,
 	}
 	providerProvider := &Provider{
-		Config:       configConfig,
-		UserService:  userService,
-		EssayService: essayService,
+		Config:          configConfig,
+		UserService:     userService,
+		ActivityService: activityService,
 	}
 	return providerProvider, nil
 }

@@ -20,8 +20,10 @@ const (
 
 type IMongoMapper interface {
 	Insert(ctx context.Context, r *Register) error
-	CheckIn(ctx context.Context, activityId string, phone string, userId string) error
+	CheckIn(ctx context.Context, activityId string, phone string, name string) error
 	FindMany(ctx context.Context, activityId string, p *basic.PaginationOptions) (registers []*Register, total int64, err error)
+	Count(ctx context.Context, activityId string) (count int64, err error)
+	FindAll(ctx context.Context, activityId string) (registers []*Register, total int64, err error)
 }
 
 type MongoMapper struct {
@@ -45,11 +47,13 @@ func (m *MongoMapper) Insert(ctx context.Context, r *Register) error {
 	return err
 }
 
-func (m *MongoMapper) CheckIn(ctx context.Context, activityId string, phone string, userId string) error {
+func (m *MongoMapper) CheckIn(ctx context.Context, activityId string, phone string, name string) error {
 	_, err := m.conn.UpdateOneNoCache(ctx, bson.M{
 		consts.ActivityId: activityId,
-		consts.UserID:     userId,
-		consts.Phone:      phone,
+		consts.Phone: bson.M{
+			"$in": []string{phone, "-1"},
+		},
+		consts.Name: name,
 	}, bson.M{
 		"$set": bson.M{
 			consts.CheckIn:    true,
@@ -81,4 +85,32 @@ func (m *MongoMapper) FindMany(ctx context.Context, activityId string, p *basic.
 		return nil, 0, err
 	}
 	return registers, total, nil
+}
+
+func (m *MongoMapper) FindAll(ctx context.Context, activityId string) (registers []*Register, total int64, err error) {
+	registers = make([]*Register, 0)
+	err = m.conn.Find(ctx, &registers,
+		bson.M{
+			consts.ActivityId: activityId,
+		}, &options.FindOptions{
+			Sort: bson.M{consts.CreateTime: -1},
+		})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	total, err = m.conn.CountDocuments(ctx, bson.M{
+		consts.ActivityId: activityId,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	return registers, total, nil
+}
+
+func (m *MongoMapper) Count(ctx context.Context, activityId string) (count int64, err error) {
+	count, err = m.conn.CountDocuments(ctx, bson.M{
+		consts.ActivityId: activityId,
+	})
+	return count, err
 }

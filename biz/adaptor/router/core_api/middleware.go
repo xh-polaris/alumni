@@ -80,3 +80,8 @@ func _updateuserinfoMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _getregistersMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

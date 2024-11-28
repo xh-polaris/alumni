@@ -4,11 +4,11 @@ import (
 	"context"
 	"github.com/google/wire"
 	"github.com/jinzhu/copier"
+	"github.com/xh-polaris/alumni-core_api/biz/adaptor"
 	"github.com/xh-polaris/alumni-core_api/biz/application/dto/alumni/core_api"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/activity"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/register"
-	"github.com/xh-polaris/essay-show/biz/adaptor"
 	"strings"
 	"time"
 )
@@ -20,6 +20,7 @@ type IActivityService interface {
 	GetActivity(ctx context.Context, req *core_api.GetActivityReq) (resp *core_api.GetActivityResp, err error)
 	RegisterActivity(ctx context.Context, req *core_api.RegisterActivityReq) (resp *core_api.Response, err error)
 	CheckInActivity(ctx context.Context, req *core_api.CheckInReq) (resp *core_api.Response, err error)
+	GetRegisters(ctx context.Context, req *core_api.GetRegistersReq) (resp *core_api.GetRegisterResp, err error)
 }
 type ActivityService struct {
 	ActivityMapper *activity.MongoMapper
@@ -67,9 +68,8 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req *core_api.Crea
 func (s *ActivityService) UpdateActivity(ctx context.Context, req *core_api.UpdateActivityReq) (resp *core_api.Response, err error) {
 	a, err := s.ActivityMapper.FindById(ctx, req.GetId())
 	if err != nil {
-		return nil, consts.ErrNotFound
+		return nil, err
 	}
-	id := req.GetId()
 	if req.Cover != nil {
 		a.Cover = *req.Cover
 	}
@@ -106,7 +106,7 @@ func (s *ActivityService) UpdateActivity(ctx context.Context, req *core_api.Upda
 	if req.Status != nil {
 		a.Status = *req.Status
 	}
-	err = s.ActivityMapper.UpdateById(ctx, id, a)
+	err = s.ActivityMapper.Update(ctx, a)
 	if err != nil {
 		return nil, consts.ErrUpdate
 	}
@@ -145,15 +145,21 @@ func (s *ActivityService) GetActivity(ctx context.Context, req *core_api.GetActi
 	if err != nil {
 		return nil, consts.ErrNotFound
 	}
-	var a *core_api.Activity
+	a := &core_api.Activity{}
 	err = copier.Copy(a, act)
 	if err != nil {
 		return nil, consts.ErrCopier
 	}
 	a.Id = act.ID.Hex()
 
+	count, err := s.RegisterMapper.Count(ctx, act.ID.Hex())
+	if err != nil {
+		return nil, consts.ErrCount
+	}
+
 	resp = &core_api.GetActivityResp{
 		Activity: a,
+		Numbers:  count,
 	}
 	return resp, nil
 }
@@ -171,6 +177,9 @@ func (s *ActivityService) RegisterActivity(ctx context.Context, req *core_api.Re
 	for _, item := range req.Items {
 		name := item.Name
 		phone := item.Phone
+		if phone == "" {
+			phone = "-1"
+		}
 		r := &register.Register{
 			ActivityId: activityId,
 			UserId:     userId,
@@ -197,16 +206,15 @@ func (s *ActivityService) RegisterActivity(ctx context.Context, req *core_api.Re
 }
 
 func (s *ActivityService) CheckInActivity(ctx context.Context, req *core_api.CheckInReq) (resp *core_api.Response, err error) {
-	userMeta := adaptor.ExtractUserMeta(ctx)
-	if userMeta.GetUserId() == "" {
-		return nil, consts.ErrNotAuthentication
-	}
-
-	userId := userMeta.GetUserId()
 	activityId := req.ActivityId
 	phone := req.Phone
+	if phone == "" {
+		phone = "-1"
+	}
+	name := req.Name
 
-	err = s.RegisterMapper.CheckIn(ctx, activityId, userId, phone)
+	err = s.RegisterMapper.CheckIn(ctx, activityId, phone, name)
+
 	if err != nil {
 		return nil, consts.ErrCheckIn
 	}
@@ -216,4 +224,34 @@ func (s *ActivityService) CheckInActivity(ctx context.Context, req *core_api.Che
 	}
 	return resp, nil
 
+}
+
+func (s *ActivityService) GetRegisters(ctx context.Context, req *core_api.GetRegistersReq) (resp *core_api.GetRegisterResp, err error) {
+	activityId := req.GetActivityId()
+	data, total, err := s.RegisterMapper.FindAll(ctx, activityId)
+	if err != nil {
+		return nil, err
+	}
+	registers := make([]*core_api.Register, 0)
+	checked := 0
+	for _, reg := range data {
+		if reg.CheckIn {
+			checked++
+		}
+		r := &core_api.Register{}
+		err2 := copier.Copy(r, reg)
+		if err2 != nil {
+			return nil, consts.ErrCopier
+		}
+		r.Id = reg.Id.Hex()
+		r.CreateTime = reg.CreateTime.Unix()
+		r.UpdateTime = reg.UpdateTime.Unix()
+		registers = append(registers, r)
+	}
+	resp = &core_api.GetRegisterResp{
+		Total:     total,
+		Checked:   int64(checked),
+		Registers: registers,
+	}
+	return resp, nil
 }

@@ -203,3 +203,19 @@ func CheckIn(ctx context.Context, c *app.RequestContext) {
 	resp, err := p.ActivityService.CheckInActivity(ctx, &req)
 	adaptor.PostProcess(ctx, c, &req, resp, err)
 }
+
+// GetRegisters .
+// @router /activity/get_register [POST]
+func GetRegisters(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req core_api.GetRegistersReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	p := provider.Get()
+	resp, err := p.ActivityService.GetRegisters(ctx, &req)
+	adaptor.PostProcess(ctx, c, &req, resp, err)
+}
