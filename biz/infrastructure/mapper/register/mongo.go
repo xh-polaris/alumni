@@ -48,7 +48,7 @@ func (m *MongoMapper) Insert(ctx context.Context, r *Register) error {
 }
 
 func (m *MongoMapper) CheckIn(ctx context.Context, activityId string, phone string, name string) error {
-	_, err := m.conn.UpdateOneNoCache(ctx, bson.M{
+	result, err := m.conn.UpdateOneNoCache(ctx, bson.M{
 		consts.ActivityId: activityId,
 		consts.Phone: bson.M{
 			"$in": []string{phone, "-1"},
@@ -60,7 +60,10 @@ func (m *MongoMapper) CheckIn(ctx context.Context, activityId string, phone stri
 			consts.UpdateTime: time.Now(),
 		},
 	})
-	return err
+	if err != nil || result.MatchedCount == 0 {
+		return consts.ErrCheckIn
+	}
+	return nil
 }
 
 func (m *MongoMapper) FindMany(ctx context.Context, activityId string, p *basic.PaginationOptions) (registers []*Register, total int64, err error) {
