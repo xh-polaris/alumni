@@ -2,8 +2,8 @@ package util
 
 import (
 	"errors"
-	"github.com/xh-polaris/essay-show/biz/infrastructure/consts"
-	"github.com/xh-polaris/essay-show/biz/infrastructure/util/log"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/util/log"
 	"google.golang.org/grpc/codes"
 	"strconv"
 	"sync"

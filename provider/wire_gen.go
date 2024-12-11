@@ -12,6 +12,7 @@ import (
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/activity"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/register"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/rpc/platform_sts"
 )
 
 // Injectors from wire.go:
@@ -31,10 +32,19 @@ func NewProvider() (*Provider, error) {
 		ActivityMapper: activityMongoMapper,
 		RegisterMapper: registerMongoMapper,
 	}
+	client := platform_sts.NewPlatformSts(configConfig)
+	platformSts := &platform_sts.PlatformSts{
+		Client: client,
+	}
+	stsService := service.StsService{
+		PlatformSts: platformSts,
+		UserMapper:  mongoMapper,
+	}
 	providerProvider := &Provider{
 		Config:          configConfig,
 		UserService:     userService,
 		ActivityService: activityService,
+		StsService:      stsService,
 	}
 	return providerProvider, nil
 }

@@ -85,3 +85,18 @@ func _getregistersMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _stsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _applysignedurlMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _sendverifycodeMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

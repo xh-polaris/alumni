@@ -36,6 +36,9 @@ var (
 	ErrSignUp            = NewErrno(codes.Code(1001), errors.New("注册失败，请重试"))
 	ErrSignIn            = NewErrno(codes.Code(1002), errors.New("登录失败，请重试"))
 	ErrCheckIn           = NewErrno(codes.Code(1004), errors.New("签到失败，请重试"))
+	ErrRepeatedSignUp    = NewErrno(codes.Code(1005), errors.New("该手机号已注册"))
+	ErrNotSignUp         = NewErrno(codes.Code(1006), errors.New("请确认手机号已注册"))
+	ErrSend              = NewErrno(codes.Code(1007), errors.New("发送验证码失败，请重试"))
 )
 
 // 数据库相关错误

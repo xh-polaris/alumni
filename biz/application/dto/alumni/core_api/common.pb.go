@@ -1810,6 +1810,181 @@ func (x *Response) GetMsg() string {
 	return ""
 }
 
+// 发送验证码请求
+type SendVerifyCodeReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	AuthType string `protobuf:"bytes,1,opt,name=authType,proto3" form:"authType" json:"authType" query:"authType"`
+	AuthId   string `protobuf:"bytes,2,opt,name=authId,proto3" form:"authId" json:"authId" query:"authId"`
+	Type     int64  `protobuf:"varint,3,opt,name=type,proto3" form:"type" json:"type" query:"type"`
+}
+
+func (x *SendVerifyCodeReq) Reset() {
+	*x = SendVerifyCodeReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_alumni_core_api_common_proto_msgTypes[24]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SendVerifyCodeReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendVerifyCodeReq) ProtoMessage() {}
+
+func (x *SendVerifyCodeReq) ProtoReflect() protoreflect.Message {
+	mi := &file_alumni_core_api_common_proto_msgTypes[24]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendVerifyCodeReq.ProtoReflect.Descriptor instead.
+func (*SendVerifyCodeReq) Descriptor() ([]byte, []int) {
+	return file_alumni_core_api_common_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *SendVerifyCodeReq) GetAuthType() string {
+	if x != nil {
+		return x.AuthType
+	}
+	return ""
+}
+
+func (x *SendVerifyCodeReq) GetAuthId() string {
+	if x != nil {
+		return x.AuthId
+	}
+	return ""
+}
+
+func (x *SendVerifyCodeReq) GetType() int64 {
+	if x != nil {
+		return x.Type
+	}
+	return 0
+}
+
+// 获取加签后url
+type ApplySignedUrlReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Prefix *string `protobuf:"bytes,1,opt,name=prefix,proto3,oneof" form:"prefix" json:"prefix" query:"prefix"`
+	Suffix *string `protobuf:"bytes,2,opt,name=suffix,proto3,oneof" form:"suffix" json:"suffix" query:"suffix"`
+}
+
+func (x *ApplySignedUrlReq) Reset() {
+	*x = ApplySignedUrlReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_alumni_core_api_common_proto_msgTypes[25]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ApplySignedUrlReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplySignedUrlReq) ProtoMessage() {}
+
+func (x *ApplySignedUrlReq) ProtoReflect() protoreflect.Message {
+	mi := &file_alumni_core_api_common_proto_msgTypes[25]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplySignedUrlReq.ProtoReflect.Descriptor instead.
+func (*ApplySignedUrlReq) Descriptor() ([]byte, []int) {
+	return file_alumni_core_api_common_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *ApplySignedUrlReq) GetPrefix() string {
+	if x != nil && x.Prefix != nil {
+		return *x.Prefix
+	}
+	return ""
+}
+
+func (x *ApplySignedUrlReq) GetSuffix() string {
+	if x != nil && x.Suffix != nil {
+		return *x.Suffix
+	}
+	return ""
+}
+
+type ApplySignedUrlResp struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Url          string `protobuf:"bytes,1,opt,name=url,proto3" form:"url" json:"url" query:"url"`
+	SessionToken string `protobuf:"bytes,2,opt,name=sessionToken,proto3" form:"sessionToken" json:"sessionToken" query:"sessionToken"`
+}
+
+func (x *ApplySignedUrlResp) Reset() {
+	*x = ApplySignedUrlResp{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_alumni_core_api_common_proto_msgTypes[26]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ApplySignedUrlResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplySignedUrlResp) ProtoMessage() {}
+
+func (x *ApplySignedUrlResp) ProtoReflect() protoreflect.Message {
+	mi := &file_alumni_core_api_common_proto_msgTypes[26]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplySignedUrlResp.ProtoReflect.Descriptor instead.
+func (*ApplySignedUrlResp) Descriptor() ([]byte, []int) {
+	return file_alumni_core_api_common_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *ApplySignedUrlResp) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *ApplySignedUrlResp) GetSessionToken() string {
+	if x != nil {
+		return x.SessionToken
+	}
+	return ""
+}
+
 type RegisterActivityReq_RegisterItem struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1822,7 +1997,7 @@ type RegisterActivityReq_RegisterItem struct {
 func (x *RegisterActivityReq_RegisterItem) Reset() {
 	*x = RegisterActivityReq_RegisterItem{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_alumni_core_api_common_proto_msgTypes[24]
+		mi := &file_alumni_core_api_common_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1835,7 +2010,7 @@ func (x *RegisterActivityReq_RegisterItem) String() string {
 func (*RegisterActivityReq_RegisterItem) ProtoMessage() {}
 
 func (x *RegisterActivityReq_RegisterItem) ProtoReflect() protoreflect.Message {
-	mi := &file_alumni_core_api_common_proto_msgTypes[24]
+	mi := &file_alumni_core_api_common_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2120,16 +2295,33 @@ var file_alumni_core_api_common_proto_rawDesc = []byte{
 	0x70, 0x64, 0x61, 0x74, 0x65, 0x54, 0x69, 0x6d, 0x65, 0x22, 0x30, 0x0a, 0x08, 0x52, 0x65, 0x73,
 	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x03, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x73, 0x67,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6d, 0x73, 0x67, 0x42, 0x80, 0x01, 0x0a, 0x24,
-	0x63, 0x6f, 0x6d, 0x2e, 0x78, 0x68, 0x70, 0x6f, 0x6c, 0x61, 0x72, 0x69, 0x73, 0x2e, 0x69, 0x64,
-	0x6c, 0x67, 0x65, 0x6e, 0x2e, 0x61, 0x6c, 0x75, 0x6d, 0x6e, 0x69, 0x2e, 0x63, 0x6f, 0x72, 0x65,
-	0x5f, 0x61, 0x70, 0x69, 0x42, 0x0b, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x50, 0x72, 0x6f, 0x74,
-	0x6f, 0x50, 0x01, 0x5a, 0x49, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x78, 0x68, 0x2d, 0x70, 0x6f, 0x6c, 0x61, 0x72, 0x69, 0x73, 0x2f, 0x61, 0x6c, 0x75, 0x6d, 0x6e,
-	0x69, 0x2d, 0x63, 0x6f, 0x72, 0x65, 0x5f, 0x61, 0x70, 0x69, 0x2f, 0x62, 0x69, 0x7a, 0x2f, 0x61,
-	0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x64, 0x74, 0x6f, 0x2f, 0x61,
-	0x6c, 0x75, 0x6d, 0x6e, 0x69, 0x2f, 0x63, 0x6f, 0x72, 0x65, 0x5f, 0x61, 0x70, 0x69, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6d, 0x73, 0x67, 0x22, 0x5b, 0x0a, 0x11, 0x53,
+	0x65, 0x6e, 0x64, 0x56, 0x65, 0x72, 0x69, 0x66, 0x79, 0x43, 0x6f, 0x64, 0x65, 0x52, 0x65, 0x71,
+	0x12, 0x1a, 0x0a, 0x08, 0x61, 0x75, 0x74, 0x68, 0x54, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x08, 0x61, 0x75, 0x74, 0x68, 0x54, 0x79, 0x70, 0x65, 0x12, 0x16, 0x0a, 0x06,
+	0x61, 0x75, 0x74, 0x68, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x75,
+	0x74, 0x68, 0x49, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x03, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0x63, 0x0a, 0x11, 0x41, 0x70, 0x70, 0x6c,
+	0x79, 0x53, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x55, 0x72, 0x6c, 0x52, 0x65, 0x71, 0x12, 0x1b, 0x0a,
+	0x06, 0x70, 0x72, 0x65, 0x66, 0x69, 0x78, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52,
+	0x06, 0x70, 0x72, 0x65, 0x66, 0x69, 0x78, 0x88, 0x01, 0x01, 0x12, 0x1b, 0x0a, 0x06, 0x73, 0x75,
+	0x66, 0x66, 0x69, 0x78, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x01, 0x52, 0x06, 0x73, 0x75,
+	0x66, 0x66, 0x69, 0x78, 0x88, 0x01, 0x01, 0x42, 0x09, 0x0a, 0x07, 0x5f, 0x70, 0x72, 0x65, 0x66,
+	0x69, 0x78, 0x42, 0x09, 0x0a, 0x07, 0x5f, 0x73, 0x75, 0x66, 0x66, 0x69, 0x78, 0x22, 0x4a, 0x0a,
+	0x12, 0x41, 0x70, 0x70, 0x6c, 0x79, 0x53, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x55, 0x72, 0x6c, 0x52,
+	0x65, 0x73, 0x70, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x03, 0x75, 0x72, 0x6c, 0x12, 0x22, 0x0a, 0x0c, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x73, 0x65, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x42, 0x80, 0x01, 0x0a, 0x24, 0x63, 0x6f,
+	0x6d, 0x2e, 0x78, 0x68, 0x70, 0x6f, 0x6c, 0x61, 0x72, 0x69, 0x73, 0x2e, 0x69, 0x64, 0x6c, 0x67,
+	0x65, 0x6e, 0x2e, 0x61, 0x6c, 0x75, 0x6d, 0x6e, 0x69, 0x2e, 0x63, 0x6f, 0x72, 0x65, 0x5f, 0x61,
+	0x70, 0x69, 0x42, 0x0b, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50,
+	0x01, 0x5a, 0x49, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x78, 0x68,
+	0x2d, 0x70, 0x6f, 0x6c, 0x61, 0x72, 0x69, 0x73, 0x2f, 0x61, 0x6c, 0x75, 0x6d, 0x6e, 0x69, 0x2d,
+	0x63, 0x6f, 0x72, 0x65, 0x5f, 0x61, 0x70, 0x69, 0x2f, 0x62, 0x69, 0x7a, 0x2f, 0x61, 0x70, 0x70,
+	0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x64, 0x74, 0x6f, 0x2f, 0x61, 0x6c, 0x75,
+	0x6d, 0x6e, 0x69, 0x2f, 0x63, 0x6f, 0x72, 0x65, 0x5f, 0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2144,7 +2336,7 @@ func file_alumni_core_api_common_proto_rawDescGZIP() []byte {
 	return file_alumni_core_api_common_proto_rawDescData
 }
 
-var file_alumni_core_api_common_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_alumni_core_api_common_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_alumni_core_api_common_proto_goTypes = []interface{}{
 	(*SignUpReq)(nil),                        // 0: alumni.core_api.SignUpReq
 	(*SignUpResp)(nil),                       // 1: alumni.core_api.SignUpResp
@@ -2170,8 +2362,11 @@ var file_alumni_core_api_common_proto_goTypes = []interface{}{
 	(*Activity)(nil),                         // 21: alumni.core_api.Activity
 	(*Register)(nil),                         // 22: alumni.core_api.Register
 	(*Response)(nil),                         // 23: alumni.core_api.Response
-	(*RegisterActivityReq_RegisterItem)(nil), // 24: alumni.core_api.RegisterActivityReq.RegisterItem
-	(*basic.PaginationOptions)(nil),          // 25: basic.PaginationOptions
+	(*SendVerifyCodeReq)(nil),                // 24: alumni.core_api.SendVerifyCodeReq
+	(*ApplySignedUrlReq)(nil),                // 25: alumni.core_api.ApplySignedUrlReq
+	(*ApplySignedUrlResp)(nil),               // 26: alumni.core_api.ApplySignedUrlResp
+	(*RegisterActivityReq_RegisterItem)(nil), // 27: alumni.core_api.RegisterActivityReq.RegisterItem
+	(*basic.PaginationOptions)(nil),          // 28: basic.PaginationOptions
 }
 var file_alumni_core_api_common_proto_depIdxs = []int32{
 	19, // 0: alumni.core_api.UpdateEducationReq.educations:type_name -> alumni.core_api.Education
@@ -2179,10 +2374,10 @@ var file_alumni_core_api_common_proto_depIdxs = []int32{
 	19, // 2: alumni.core_api.GetUserInfoResp.hometownEducations:type_name -> alumni.core_api.Education
 	19, // 3: alumni.core_api.GetUserInfoResp.shanghaiEducations:type_name -> alumni.core_api.Education
 	20, // 4: alumni.core_api.GetUserInfoResp.employments:type_name -> alumni.core_api.Employment
-	25, // 5: alumni.core_api.GetActivitiesReq.paginationOptions:type_name -> basic.PaginationOptions
+	28, // 5: alumni.core_api.GetActivitiesReq.paginationOptions:type_name -> basic.PaginationOptions
 	21, // 6: alumni.core_api.GetActivitiesResp.activities:type_name -> alumni.core_api.Activity
 	21, // 7: alumni.core_api.GetActivityResp.activity:type_name -> alumni.core_api.Activity
-	24, // 8: alumni.core_api.RegisterActivityReq.items:type_name -> alumni.core_api.RegisterActivityReq.RegisterItem
+	27, // 8: alumni.core_api.RegisterActivityReq.items:type_name -> alumni.core_api.RegisterActivityReq.RegisterItem
 	22, // 9: alumni.core_api.GetRegisterResp.registers:type_name -> alumni.core_api.Register
 	10, // [10:10] is the sub-list for method output_type
 	10, // [10:10] is the sub-list for method input_type
@@ -2485,6 +2680,42 @@ func file_alumni_core_api_common_proto_init() {
 			}
 		}
 		file_alumni_core_api_common_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SendVerifyCodeReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_alumni_core_api_common_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ApplySignedUrlReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_alumni_core_api_common_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ApplySignedUrlResp); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_alumni_core_api_common_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RegisterActivityReq_RegisterItem); i {
 			case 0:
 				return &v.state
@@ -2501,13 +2732,14 @@ func file_alumni_core_api_common_proto_init() {
 	file_alumni_core_api_common_proto_msgTypes[4].OneofWrappers = []interface{}{}
 	file_alumni_core_api_common_proto_msgTypes[9].OneofWrappers = []interface{}{}
 	file_alumni_core_api_common_proto_msgTypes[10].OneofWrappers = []interface{}{}
+	file_alumni_core_api_common_proto_msgTypes[25].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_alumni_core_api_common_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   25,
+			NumMessages:   28,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

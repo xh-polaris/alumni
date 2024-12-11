@@ -28,6 +28,11 @@ func Register(r *server.Hertz) {
 		_activity.POST("/update", append(_updateactivityMw(), core_api.UpdateActivity)...)
 	}
 	{
+		_sts := root.Group("/sts", _stsMw()...)
+		_sts.POST("/apply", append(_applysignedurlMw(), core_api.ApplySignedUrl)...)
+		_sts.POST("/send_verify_code", append(_sendverifycodeMw(), core_api.SendVerifyCode)...)
+	}
+	{
 		_user := root.Group("/user", _userMw()...)
 		_user.GET("/info", append(_getuserinfoMw(), core_api.GetUserInfo)...)
 		_user.POST("/sign_in", append(_signinMw(), core_api.SignIn)...)

@@ -7,6 +7,7 @@ import (
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/activity"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/register"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/rpc/platform_sts"
 )
 
 var provider *Provider
@@ -24,6 +25,7 @@ type Provider struct {
 	Config          *config.Config
 	UserService     service.UserService
 	ActivityService service.ActivityService
+	StsService      service.StsService
 }
 
 func Get() *Provider {
@@ -33,6 +35,11 @@ func Get() *Provider {
 var ApplicationSet = wire.NewSet(
 	service.UserServiceSet,
 	service.ActivityServiceSet,
+	service.StsServiceSet,
+)
+
+var RpcSet = wire.NewSet(
+	platform_sts.PlatformStsSet,
 )
 
 var InfrastructureSet = wire.NewSet(
@@ -40,6 +47,7 @@ var InfrastructureSet = wire.NewSet(
 	user.NewMongoMapper,
 	activity.NewMongoMapper,
 	register.NewMongoMapper,
+	RpcSet,
 )
 
 var AllProvider = wire.NewSet(

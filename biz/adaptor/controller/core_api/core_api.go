@@ -4,8 +4,8 @@ package core_api
 
 import (
 	"context"
+	"github.com/xh-polaris/alumni-core_api/biz/adaptor"
 	"github.com/xh-polaris/alumni-core_api/provider"
-	"github.com/xh-polaris/essay-show/biz/adaptor"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -217,5 +217,37 @@ func GetRegisters(ctx context.Context, c *app.RequestContext) {
 
 	p := provider.Get()
 	resp, err := p.ActivityService.GetRegisters(ctx, &req)
+	adaptor.PostProcess(ctx, c, &req, resp, err)
+}
+
+// ApplySignedUrl .
+// @router /sts/apply [POST]
+func ApplySignedUrl(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req core_api.ApplySignedUrlReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	p := provider.Get()
+	resp, err := p.StsService.ApplySignedUrl(ctx, &req)
+	adaptor.PostProcess(ctx, c, &req, resp, err)
+}
+
+// SendVerifyCode .
+// @router /sts/send_verify_code [POST]
+func SendVerifyCode(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req core_api.SendVerifyCodeReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	p := provider.Get()
+	resp, err := p.StsService.SendVerifyCode(ctx, &req)
 	adaptor.PostProcess(ctx, c, &req, resp, err)
 }
