@@ -2,6 +2,9 @@ package service
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/google/wire"
 	"github.com/jinzhu/copier"
 	"github.com/xh-polaris/alumni-core_api/biz/adaptor"
@@ -9,8 +12,6 @@ import (
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/activity"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/register"
-	"strings"
-	"time"
 )
 
 type IActivityService interface {
@@ -145,12 +146,21 @@ func (s *ActivityService) GetActivity(ctx context.Context, req *core_api.GetActi
 	if err != nil {
 		return nil, consts.ErrNotFound
 	}
-	a := &core_api.Activity{}
-	err = copier.Copy(a, act)
-	if err != nil {
-		return nil, consts.ErrCopier
+	a := &core_api.Activity{
+		Id:            act.ID.Hex(),
+		Cover:         act.Cover,
+		Name:          act.Name,
+		Location:      act.Location,
+		ExactLocation: act.ExactLocation,
+		Sponsor:       act.Sponsor,
+		Start:         act.Start,
+		RegisterStart: act.RegisterStart.Unix(),
+		RegisterEnd:   act.RegisterEnd.Unix(),
+		Description:   act.Description,
+		Contact:       act.Contact,
+		Limit:         act.Limit,
+		Status:        act.Status,
 	}
-	a.Id = act.ID.Hex()
 
 	count, err := s.RegisterMapper.Count(ctx, act.ID.Hex())
 	if err != nil {
