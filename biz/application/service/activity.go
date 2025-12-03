@@ -237,8 +237,23 @@ func (s *ActivityService) CheckInActivity(ctx context.Context, req *core_api.Che
 }
 
 func (s *ActivityService) GetRegisters(ctx context.Context, req *core_api.GetRegistersReq) (resp *core_api.GetRegisterResp, err error) {
+	var (
+		data  []*register.Register
+		total int64
+	)
 	activityId := req.GetActivityId()
-	data, total, err := s.RegisterMapper.FindAll(ctx, activityId)
+	aid, ok := strings.CutPrefix(activityId, ":")
+	if !ok {
+		data, total, err = s.RegisterMapper.FindAll(ctx, activityId)
+	} else {
+		userMeta := adaptor.ExtractUserMeta(ctx)
+		if userMeta.GetUserId() == "" {
+			return nil, consts.ErrNotAuthentication
+		}
+		userId := userMeta.GetUserId()
+		data, total, err = s.RegisterMapper.FindByAidAndUid(ctx, aid, userId)
+	}
+
 	if err != nil {
 		return nil, err
 	}

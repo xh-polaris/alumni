@@ -2,6 +2,8 @@ package register
 
 import (
 	"context"
+	"time"
+
 	"github.com/xh-polaris/alumni-core_api/biz/application/dto/basic"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/config"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
@@ -10,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 const (
@@ -24,6 +25,7 @@ type IMongoMapper interface {
 	FindMany(ctx context.Context, activityId string, p *basic.PaginationOptions) (registers []*Register, total int64, err error)
 	Count(ctx context.Context, activityId string) (count int64, err error)
 	FindAll(ctx context.Context, activityId string) (registers []*Register, total int64, err error)
+	FindByAidAndUid(ctx context.Context, activityId, uid string) (registers []*Register, total int64, err error)
 }
 
 type MongoMapper struct {
@@ -116,4 +118,26 @@ func (m *MongoMapper) Count(ctx context.Context, activityId string) (count int64
 		consts.ActivityId: activityId,
 	})
 	return count, err
+}
+
+func (m *MongoMapper) FindByAidAndUid(ctx context.Context, activityId, uid string) (registers []*Register, total int64, err error) {
+	registers = make([]*Register, 0)
+	err = m.conn.Find(ctx, &registers,
+		bson.M{
+			consts.ActivityId: activityId,
+			consts.UserID:     uid,
+		}, &options.FindOptions{
+			Sort: bson.M{consts.CreateTime: -1},
+		})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	total, err = m.conn.CountDocuments(ctx, bson.M{
+		consts.ActivityId: activityId,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	return registers, total, nil
 }
