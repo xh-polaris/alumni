@@ -5,11 +5,37 @@ package main
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	handler "github.com/xh-polaris/alumni-core_api/biz/adaptor/controller"
+	admin "github.com/xh-polaris/alumni-core_api/biz/adaptor/controller/admin"
 )
 
 // customizeRegister registers customize routers.
 func customizedRegister(r *server.Hertz) {
 	r.GET("/ping", handler.Ping)
 
-	// your code ...
+	adminGroup := r.Group("/admin", admin.RequireAuth())
+	adminGroup.GET("/session", admin.GetSession)
+
+	adminGroup.GET("/users", admin.ListUsers)
+	adminGroup.GET("/users/:id", admin.GetUser)
+	adminGroup.PATCH("/users/:id", admin.UpdateUser)
+	adminGroup.PATCH("/users/:id/role", admin.SetUserRole)
+	adminGroup.PATCH("/users/:id/status", admin.SetUserStatus)
+	adminGroup.DELETE("/users/:id", admin.DeleteUser)
+	adminGroup.POST("/users/:id/restore", admin.RestoreUser)
+
+	adminGroup.GET("/registrations", admin.ListRegistrations)
+	adminGroup.POST("/registrations", admin.CreateRegistration)
+	adminGroup.PATCH("/registrations/:id", admin.UpdateRegistration)
+	adminGroup.DELETE("/registrations/:id", admin.DeleteRegistration)
+	adminGroup.POST("/registrations/:id/check-in", admin.CheckInRegistration)
+	adminGroup.POST("/registrations/:id/cancel-check-in", admin.CancelCheckInRegistration)
+
+	adminGroup.GET("/articles", admin.ListArticles)
+	adminGroup.GET("/articles/:id", admin.GetArticle)
+	adminGroup.POST("/articles", admin.CreateArticle)
+	adminGroup.PATCH("/articles/:id", admin.UpdateArticle)
+	adminGroup.DELETE("/articles/:id", admin.DeleteArticle)
+	adminGroup.POST("/articles/:id/restore", admin.RestoreArticle)
+	adminGroup.POST("/articles/:id/publish", admin.PublishArticle)
+	adminGroup.POST("/articles/:id/offline", admin.OfflineArticle)
 }

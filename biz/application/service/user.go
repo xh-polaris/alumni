@@ -54,6 +54,7 @@ func (u *UserService) SignUp(ctx context.Context, req *core_api.SignUpReq) (*cor
 	aUser := user.User{
 		ID:         oid,
 		Phone:      req.AuthId,
+		Role:       "user",
 		Status:     0,
 		CreateTime: now,
 		UpdateTime: now,

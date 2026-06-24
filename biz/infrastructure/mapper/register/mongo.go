@@ -21,8 +21,11 @@ const (
 
 type IMongoMapper interface {
 	Insert(ctx context.Context, r *Register) error
+	Update(ctx context.Context, r *Register) error
+	FindByID(ctx context.Context, id string) (*Register, error)
 	CheckIn(ctx context.Context, activityId string, phone string, name string) error
 	FindMany(ctx context.Context, activityId string, p *basic.PaginationOptions) (registers []*Register, total int64, err error)
+	FindManyByFilter(ctx context.Context, filter bson.M, skip, limit int64) (registers []*Register, total int64, err error)
 	Count(ctx context.Context, activityId string) (count int64, err error)
 	FindAll(ctx context.Context, activityId string) (registers []*Register, total int64, err error)
 	FindByAidAndUid(ctx context.Context, activityId, uid string) (registers []*Register, total int64, err error)
@@ -43,10 +46,30 @@ func (m *MongoMapper) Insert(ctx context.Context, r *Register) error {
 	if r.Id.IsZero() {
 		r.Id = primitive.NewObjectID()
 		r.CreateTime = time.Now()
+		r.UpdateTime = r.CreateTime
 	}
 	ket := prefixKeyCacheKey + r.Id.Hex()
 	_, err := m.conn.InsertOne(ctx, ket, r)
 	return err
+}
+
+func (m *MongoMapper) Update(ctx context.Context, r *Register) error {
+	r.UpdateTime = time.Now()
+	_, err := m.conn.UpdateByIDNoCache(ctx, r.Id, bson.M{"$set": r})
+	return err
+}
+
+func (m *MongoMapper) FindByID(ctx context.Context, id string) (*Register, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, consts.ErrInvalidObjectId
+	}
+	var r Register
+	err = m.conn.FindOneNoCache(ctx, &r, bson.M{consts.ID: oid})
+	if err != nil {
+		return nil, consts.ErrNotFound
+	}
+	return &r, nil
 }
 
 func (m *MongoMapper) CheckIn(ctx context.Context, activityId string, phone string, name string) error {
@@ -86,6 +109,24 @@ func (m *MongoMapper) FindMany(ctx context.Context, activityId string, p *basic.
 	total, err = m.conn.CountDocuments(ctx, bson.M{
 		consts.ActivityId: activityId,
 	})
+	if err != nil {
+		return nil, 0, err
+	}
+	return registers, total, nil
+}
+
+func (m *MongoMapper) FindManyByFilter(ctx context.Context, filter bson.M, skip, limit int64) (registers []*Register, total int64, err error) {
+	registers = make([]*Register, 0, limit)
+	err = m.conn.Find(ctx, &registers, filter, &options.FindOptions{
+		Skip:  &skip,
+		Limit: &limit,
+		Sort:  bson.M{consts.CreateTime: -1},
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	total, err = m.conn.CountDocuments(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}

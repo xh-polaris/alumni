@@ -10,6 +10,7 @@ import (
 	"github.com/xh-polaris/alumni-core_api/biz/application/service"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/config"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/activity"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/article"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/register"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/rpc/platform_sts"
@@ -32,6 +33,12 @@ func NewProvider() (*Provider, error) {
 		ActivityMapper: activityMongoMapper,
 		RegisterMapper: registerMongoMapper,
 	}
+	articleMongoMapper := article.NewMongoMapper(configConfig)
+	adminService := service.AdminService{
+		UserMapper:     mongoMapper,
+		RegisterMapper: registerMongoMapper,
+		ArticleMapper:  articleMongoMapper,
+	}
 	client := platform_sts.NewPlatformSts(configConfig)
 	platformSts := &platform_sts.PlatformSts{
 		Client: client,
@@ -44,6 +51,7 @@ func NewProvider() (*Provider, error) {
 		Config:          configConfig,
 		UserService:     userService,
 		ActivityService: activityService,
+		AdminService:    adminService,
 		StsService:      stsService,
 	}
 	return providerProvider, nil

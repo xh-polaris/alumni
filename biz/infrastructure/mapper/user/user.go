@@ -17,6 +17,7 @@ type User struct {
 	HomeEducations     []Education        `bson:"home_educations" json:"homeEducations"`
 	ShanghaiEducations []Education        `bson:"shanghai_educations" json:"shanghaiEducations"`
 	Employments        []Employment       `bson:"employments" json:"employments"`
+	Role               string             `bson:"role" json:"role"`
 	Status             int64              `bson:"status" json:"status"`
 	CreateTime         time.Time          `bson:"create_time,omitempty" json:"createTime"`
 	UpdateTime         time.Time          `bson:"update_time,omitempty" json:"updateTime"`
