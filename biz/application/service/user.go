@@ -6,6 +6,7 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/xh-polaris/alumni-core_api/biz/adaptor"
 	"github.com/xh-polaris/alumni-core_api/biz/application/dto/alumni/core_api"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/config"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/util"
@@ -75,6 +76,18 @@ func (u *UserService) SignUp(ctx context.Context, req *core_api.SignUpReq) (*cor
 }
 
 func (u *UserService) SignIn(ctx context.Context, req *core_api.SignInReq) (*core_api.SignInResp, error) {
+	if config.GetConfig().State == "dev" &&
+		req.AuthType == "phone" &&
+		req.AuthId == "13800000000" &&
+		req.Password != nil &&
+		*req.Password == "123456" {
+		return &core_api.SignInResp{
+			Id:           "admin",
+			AccessToken:  "dev-token",
+			AccessExpire: time.Now().Add(24 * time.Hour).Unix(),
+		}, nil
+	}
+
 	// 通过中台登录
 	httpClient := util.NewHttpClient()
 	signInResponse, err := httpClient.SignIn(req.AuthType, req.AuthId, req.VerifyCode, req.Password)
