@@ -27,6 +27,7 @@ type Provider struct {
 	UserService     service.UserService
 	ActivityService service.ActivityService
 	AdminService    service.AdminService
+	ArticleService  service.ArticleService
 	StsService      service.StsService
 }
 
@@ -38,6 +39,7 @@ var ApplicationSet = wire.NewSet(
 	service.UserServiceSet,
 	service.ActivityServiceSet,
 	service.AdminServiceSet,
+	service.ArticleServiceSet,
 	service.StsServiceSet,
 )
 

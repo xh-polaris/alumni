@@ -6,11 +6,14 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	handler "github.com/xh-polaris/alumni-core_api/biz/adaptor/controller"
 	admin "github.com/xh-polaris/alumni-core_api/biz/adaptor/controller/admin"
+	article "github.com/xh-polaris/alumni-core_api/biz/adaptor/controller/article"
 )
 
 // customizeRegister registers customize routers.
 func customizedRegister(r *server.Hertz) {
 	r.GET("/ping", handler.Ping)
+	r.GET("/articles", article.ListArticles)
+	r.GET("/articles/:id", article.GetArticle)
 
 	adminGroup := r.Group("/admin", admin.RequireAuth())
 	adminGroup.GET("/session", admin.GetSession)

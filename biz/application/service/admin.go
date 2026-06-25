@@ -23,6 +23,7 @@ const (
 var (
 	ErrAdminUnauthorized = errors.New("登录已失效")
 	ErrAdminBadRequest   = errors.New("请求参数错误")
+	ErrAdminNotFound     = errors.New("资源不存在")
 )
 
 type AdminService struct {

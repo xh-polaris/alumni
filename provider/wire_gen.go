@@ -39,6 +39,9 @@ func NewProvider() (*Provider, error) {
 		RegisterMapper: registerMongoMapper,
 		ArticleMapper:  articleMongoMapper,
 	}
+	articleService := service.ArticleService{
+		ArticleMapper: articleMongoMapper,
+	}
 	client := platform_sts.NewPlatformSts(configConfig)
 	platformSts := &platform_sts.PlatformSts{
 		Client: client,
@@ -52,6 +55,7 @@ func NewProvider() (*Provider, error) {
 		UserService:     userService,
 		ActivityService: activityService,
 		AdminService:    adminService,
+		ArticleService:  articleService,
 		StsService:      stsService,
 	}
 	return providerProvider, nil
