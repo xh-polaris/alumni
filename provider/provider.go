@@ -6,6 +6,7 @@ import (
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/config"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/activity"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/article"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/seed"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/register"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/rpc/platform_sts"
@@ -19,6 +20,7 @@ func Init() {
 	if err != nil {
 		panic(err)
 	}
+	seed.EnsureDevData(provider.Config)
 }
 
 // Provider 提供controller依赖的对象

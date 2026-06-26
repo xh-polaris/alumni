@@ -173,6 +173,7 @@ func (c *HttpClient) SendVerifyCode(authType string, authId string) (map[string]
 	body := make(map[string]interface{})
 	body["authType"] = authType
 	body["authId"] = authId
+	body["appId"] = consts.AppId
 
 	header := make(map[string]string)
 	header["Content-Type"] = consts.ContentTypeJson

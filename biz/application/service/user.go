@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
+	"strings"
+
 	"github.com/google/wire"
 	"github.com/jinzhu/copier"
 	"github.com/xh-polaris/alumni-core_api/biz/adaptor"
 	"github.com/xh-polaris/alumni-core_api/biz/application/dto/alumni/core_api"
-	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/config"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/util"
@@ -30,44 +31,127 @@ var UserServiceSet = wire.NewSet(
 	wire.Bind(new(IUserService), new(*UserService)),
 )
 
+func (u *UserService) findAuthenticatedUser(ctx context.Context) (*user.User, error) {
+	userMeta := adaptor.ExtractUserMeta(ctx)
+	if userMeta.GetUserId() == "" {
+		return nil, consts.ErrNotAuthentication
+	}
+	aUser, err := u.UserMapper.FindOne(ctx, userMeta.GetUserId())
+	if err == nil {
+		return aUser, nil
+	}
+	if adaptor.IsDevModeRequest(ctx) && userMeta.GetUserId() == consts.DevMockUserID && err == consts.ErrNotFound {
+		if createErr := u.createLocalUser(ctx, consts.DevMockUserID, "13800000000", "开发测试用户"); createErr != nil {
+			return nil, createErr
+		}
+		return u.UserMapper.FindOne(ctx, userMeta.GetUserId())
+	}
+	return nil, err
+}
+
+func (u *UserService) ensureLocalUser(ctx context.Context, platformUserID, phone, name string) error {
+	phone = strings.TrimSpace(phone)
+	name = strings.TrimSpace(name)
+
+	if existing, err := u.UserMapper.FindOne(ctx, platformUserID); err == nil {
+		changed := false
+		if phone != "" && existing.Phone != phone {
+			existing.Phone = phone
+			changed = true
+		}
+		if name != "" && existing.Name == "" {
+			existing.Name = name
+			changed = true
+		}
+		if existing.Role == "" {
+			existing.Role = "user"
+			changed = true
+		}
+		if changed {
+			return u.UserMapper.Update(ctx, existing)
+		}
+		return nil
+	} else if err != consts.ErrNotFound {
+		return err
+	}
+
+	existing, err := u.UserMapper.FindOneByPhone(ctx, phone)
+	if err == nil {
+		return u.linkUserToPlatformID(ctx, existing, platformUserID, name)
+	}
+	if err != consts.ErrNotFound {
+		return err
+	}
+
+	return u.createLocalUser(ctx, platformUserID, phone, name)
+}
+
+func (u *UserService) createLocalUser(ctx context.Context, platformUserID, phone, name string) error {
+	oid, err := primitive.ObjectIDFromHex(platformUserID)
+	if err != nil {
+		return consts.ErrSignIn
+	}
+	now := time.Now()
+	aUser := user.User{
+		ID:         oid,
+		Name:       name,
+		Phone:      phone,
+		Role:       "user",
+		Status:     0,
+		CreateTime: now,
+		UpdateTime: now,
+	}
+	return u.UserMapper.Insert(ctx, &aUser)
+}
+
+func (u *UserService) linkUserToPlatformID(ctx context.Context, existing *user.User, platformUserID, name string) error {
+	oid, err := primitive.ObjectIDFromHex(platformUserID)
+	if err != nil {
+		return consts.ErrSignIn
+	}
+	if existing.ID == oid {
+		return nil
+	}
+
+	migrated := *existing
+	migrated.ID = oid
+	if strings.TrimSpace(name) != "" && migrated.Name == "" {
+		migrated.Name = strings.TrimSpace(name)
+	}
+	if migrated.Role == "" {
+		migrated.Role = "user"
+	}
+	migrated.Status = 0
+	migrated.DeleteTime = time.Time{}
+	migrated.UpdateTime = time.Now()
+	if err := u.UserMapper.Insert(ctx, &migrated); err != nil {
+		return err
+	}
+	return u.UserMapper.SoftDeleteByID(ctx, existing.ID)
+}
+
 func (u *UserService) SignUp(ctx context.Context, req *core_api.SignUpReq) (*core_api.SignUpResp, error) {
-	// 在中台注册账户
+	if req.AuthType != "phone" || strings.TrimSpace(req.AuthId) == "" || strings.TrimSpace(req.Password) == "" {
+		return nil, consts.ErrSignUp
+	}
+
 	httpClient := util.NewHttpClient()
-	signUpResponse, err := httpClient.SignUp(req.AuthType, req.AuthId, &req.VerifyCode)
+	signUpResponse, err := httpClient.SignUp(req.AuthType, strings.TrimSpace(req.AuthId), &req.VerifyCode)
 	if err != nil {
 		return nil, consts.ErrSignUp
 	}
 
-	// 在中台设置密码
 	authorization := signUpResponse["accessToken"].(string)
 	_, err = httpClient.SetPassword(authorization, req.Password)
 	if err != nil {
 		return nil, consts.ErrSignUp
 	}
 
-	// 初始化用户
 	userId := signUpResponse["userId"].(string)
-	oid, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return nil, err
-	}
-	now := time.Now()
-	aUser := user.User{
-		ID:         oid,
-		Phone:      req.AuthId,
-		Role:       "user",
-		Status:     0,
-		CreateTime: now,
-		UpdateTime: now,
-	}
-
-	// 向数据库中插入数据
-	err = u.UserMapper.Insert(ctx, &aUser)
-	if err != nil {
+	if err := u.ensureLocalUser(ctx, userId, req.AuthId, req.Name); err != nil {
 		return nil, consts.ErrSignUp
 	}
 
-	// 返回响应
 	return &core_api.SignUpResp{
 		Id:           userId,
 		AccessToken:  authorization,
@@ -76,41 +160,43 @@ func (u *UserService) SignUp(ctx context.Context, req *core_api.SignUpReq) (*cor
 }
 
 func (u *UserService) SignIn(ctx context.Context, req *core_api.SignInReq) (*core_api.SignInResp, error) {
-	if config.GetConfig().State == "dev" &&
-		req.AuthType == "phone" &&
-		req.AuthId == "13800000000" &&
-		req.Password != nil &&
-		*req.Password == "123456" {
+	if adaptor.IsDevModeRequest(ctx) {
+		if err := u.ensureLocalUser(ctx, consts.DevMockUserID, "13800000000", "开发测试用户"); err != nil {
+			return nil, consts.ErrSignIn
+		}
 		return &core_api.SignInResp{
-			Id:           "admin",
-			AccessToken:  "dev-token",
+			Id:           consts.DevMockUserID,
+			AccessToken:  consts.DevMockAccessToken,
 			AccessExpire: time.Now().Add(24 * time.Hour).Unix(),
 		}, nil
 	}
 
-	// 通过中台登录
+	if req.AuthType != "phone" || strings.TrimSpace(req.AuthId) == "" {
+		return nil, consts.ErrSignIn
+	}
+
 	httpClient := util.NewHttpClient()
-	signInResponse, err := httpClient.SignIn(req.AuthType, req.AuthId, req.VerifyCode, req.Password)
+	signInResponse, err := httpClient.SignIn(req.AuthType, strings.TrimSpace(req.AuthId), req.VerifyCode, req.Password)
 	if err != nil {
 		return nil, consts.ErrSignIn
 	}
 
+	userId := signInResponse["userId"].(string)
+	if err := u.ensureLocalUser(ctx, userId, req.AuthId, ""); err != nil {
+		return nil, consts.ErrSignIn
+	}
+
 	return &core_api.SignInResp{
-		Id:           signInResponse["userId"].(string),
+		Id:           userId,
 		AccessToken:  signInResponse["accessToken"].(string),
 		AccessExpire: int64(signInResponse["accessExpire"].(float64)),
 	}, nil
 }
 
 func (u *UserService) UpdateUserInfo(ctx context.Context, req *core_api.UpdateUserInfoReq) (resp *core_api.Response, err error) {
-	userMeta := adaptor.ExtractUserMeta(ctx)
-	if userMeta.GetUserId() == "" {
-		return nil, consts.ErrNotAuthentication
-	}
-
-	aUser, err := u.UserMapper.FindOne(ctx, userMeta.GetUserId())
+	aUser, err := u.findAuthenticatedUser(ctx)
 	if err != nil {
-		return resp, consts.ErrNotFound
+		return nil, err
 	}
 
 	if req.Phone != nil {
@@ -147,14 +233,9 @@ func (u *UserService) UpdateUserInfo(ctx context.Context, req *core_api.UpdateUs
 }
 
 func (u *UserService) UpdateEducation(ctx context.Context, req *core_api.UpdateEducationReq) (resp *core_api.Response, err error) {
-	userMeta := adaptor.ExtractUserMeta(ctx)
-	if userMeta.GetUserId() == "" {
-		return nil, consts.ErrNotAuthentication
-	}
-
-	aUser, err := u.UserMapper.FindOne(ctx, userMeta.GetUserId())
+	aUser, err := u.findAuthenticatedUser(ctx)
 	if err != nil {
-		return nil, consts.ErrNotFound
+		return nil, err
 	}
 
 	educations := make([]user.Education, 0)
@@ -186,14 +267,9 @@ func (u *UserService) UpdateEducation(ctx context.Context, req *core_api.UpdateE
 }
 
 func (u *UserService) UpdateEmployment(ctx context.Context, req *core_api.UpdateEmploymentReq) (resp *core_api.Response, err error) {
-	userMeta := adaptor.ExtractUserMeta(ctx)
-	if userMeta.GetUserId() == "" {
-		return nil, consts.ErrNotAuthentication
-	}
-
-	aUser, err := u.UserMapper.FindOne(ctx, userMeta.GetUserId())
+	aUser, err := u.findAuthenticatedUser(ctx)
 	if err != nil {
-		return nil, consts.ErrNotFound
+		return nil, err
 	}
 
 	employments := make([]user.Employment, 0)
@@ -219,14 +295,9 @@ func (u *UserService) UpdateEmployment(ctx context.Context, req *core_api.Update
 }
 
 func (u *UserService) GetUserInfo(ctx context.Context, req *core_api.GetUserInfoReq) (resp *core_api.GetUserInfoResp, err error) {
-	userMeta := adaptor.ExtractUserMeta(ctx)
-	if userMeta.GetUserId() == "" {
-		return nil, consts.ErrNotAuthentication
-	}
-
-	aUser, err := u.UserMapper.FindOne(ctx, userMeta.GetUserId())
+	aUser, err := u.findAuthenticatedUser(ctx)
 	if err != nil {
-		return nil, consts.ErrNotFound
+		return nil, err
 	}
 
 	homeEducations := make([]*core_api.Education, 0)

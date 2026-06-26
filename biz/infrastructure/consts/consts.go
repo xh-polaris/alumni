@@ -35,3 +35,11 @@ const (
 	DefaultCount = 10
 	AppId        = 15
 )
+
+// dev mock auth
+const (
+	DevMockAccessToken = "mock-token"
+	DevMockUserID      = "66a000000000000000000001"
+	DevModeHeader      = "X-Alumni-Mode"
+	DevModeValue       = "dev"
+)

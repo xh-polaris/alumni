@@ -125,12 +125,21 @@ func (s *ActivityService) GetActivities(ctx context.Context, req *core_api.GetAc
 	}
 	var activities []*core_api.Activity
 	for _, act := range data {
-		a := &core_api.Activity{}
-		err2 := copier.Copy(a, act)
-		if err2 != nil {
-			return nil, consts.ErrCopier
+		a := &core_api.Activity{
+			Id:            act.ID.Hex(),
+			Cover:         act.Cover,
+			Name:          act.Name,
+			Location:      act.Location,
+			ExactLocation: act.ExactLocation,
+			Sponsor:       act.Sponsor,
+			Start:         act.Start,
+			RegisterStart: act.RegisterStart.Unix(),
+			RegisterEnd:   act.RegisterEnd.Unix(),
+			Description:   act.Description,
+			Contact:       act.Contact,
+			Limit:         act.Limit,
+			Status:        act.Status,
 		}
-		a.Id = act.ID.Hex()
 		activities = append(activities, a)
 	}
 

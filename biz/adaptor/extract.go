@@ -3,7 +3,9 @@ package adaptor
 import (
 	"context"
 	"errors"
+
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/config"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/util"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/util/log"
 
@@ -31,6 +33,14 @@ func ExtractMeta(ctx context.Context) (*basic.UserMeta, *basic.Extra) {
 	return ExtractUserMeta(ctx), ExtractExtra(ctx)
 }
 
+func IsDevModeRequest(ctx context.Context) bool {
+	c, err := ExtractContext(ctx)
+	if err != nil {
+		return false
+	}
+	return string(c.GetHeader(consts.DevModeHeader)) == consts.DevModeValue
+}
+
 func ExtractUserMeta(ctx context.Context) (user *basic.UserMeta) {
 	user = new(basic.UserMeta)
 	var err error
@@ -44,6 +54,14 @@ func ExtractUserMeta(ctx context.Context) (user *basic.UserMeta) {
 		return
 	}
 	tokenString := c.GetHeader("Authorization")
+	if IsDevModeRequest(ctx) && string(tokenString) == consts.DevMockAccessToken {
+		user.UserId = consts.DevMockUserID
+		user.AppId = basic.APP(consts.AppId)
+		user.SessionUserId = user.UserId
+		user.SessionAppId = user.AppId
+		user.IsLogin = true
+		return
+	}
 	token, err := jwt.Parse(string(tokenString), func(_ *jwt.Token) (interface{}, error) {
 		return jwt.ParseECPublicKeyFromPEM([]byte(config.GetConfig().Auth.PublicKey))
 	})

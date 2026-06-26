@@ -24,6 +24,7 @@ type IMongoMapper interface {
 	FindOne(ctx context.Context, id string) (*User, error)
 	FindOneByPhone(ctx context.Context, phone string) (*User, error)
 	FindMany(ctx context.Context, filter bson.M, skip, limit int64) ([]*User, int64, error)
+	SoftDeleteByID(ctx context.Context, id primitive.ObjectID) error
 }
 
 type MongoMapper struct {
@@ -85,6 +86,16 @@ func (m *MongoMapper) FindOneByPhone(ctx context.Context, phone string) (*User, 
 	default:
 		return nil, err
 	}
+}
+
+func (m *MongoMapper) SoftDeleteByID(ctx context.Context, id primitive.ObjectID) error {
+	now := time.Now()
+	_, err := m.conn.UpdateByIDNoCache(ctx, id, bson.M{"$set": bson.M{
+		"status":      int64(1),
+		"delete_time": now,
+		"update_time": now,
+	}})
+	return err
 }
 
 func (m *MongoMapper) FindMany(ctx context.Context, filter bson.M, skip, limit int64) ([]*User, int64, error) {
