@@ -26,12 +26,24 @@ func RequireAuth() app.HandlerFunc {
 			c.Abort()
 			return
 		}
+		if _, err := provider.Get().AdminService.GetSession(ctx); err != nil {
+			status := hertz.StatusInternalServerError
+			switch {
+			case errors.Is(err, service.ErrAdminUnauthorized):
+				status = hertz.StatusUnauthorized
+			case errors.Is(err, service.ErrAdminForbidden):
+				status = hertz.StatusForbidden
+			}
+			fail(c, status, err.Error())
+			c.Abort()
+			return
+		}
 		c.Next(ctx)
 	}
 }
 
 func GetSession(ctx context.Context, c *app.RequestContext) {
-	resp, err := provider.Get().AdminService.GetSession(ctx, string(c.GetHeader("Authorization")))
+	resp, err := provider.Get().AdminService.GetSession(ctx)
 	write(c, resp, err)
 }
 
@@ -196,6 +208,8 @@ func write(c *app.RequestContext, data any, err error) {
 	switch {
 	case errors.Is(err, service.ErrAdminUnauthorized):
 		fail(c, hertz.StatusUnauthorized, err.Error())
+	case errors.Is(err, service.ErrAdminForbidden):
+		fail(c, hertz.StatusForbidden, err.Error())
 	case errors.Is(err, service.ErrAdminBadRequest):
 		fail(c, hertz.StatusBadRequest, err.Error())
 	case err == consts.ErrNotFound || err == consts.ErrInvalidObjectId:

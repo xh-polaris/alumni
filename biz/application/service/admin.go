@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/google/wire"
+	"github.com/xh-polaris/alumni-core_api/biz/adaptor"
+	appconsts "github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/article"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/register"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
@@ -22,6 +24,7 @@ const (
 
 var (
 	ErrAdminUnauthorized = errors.New("登录已失效")
+	ErrAdminForbidden    = errors.New("当前账号无管理权限")
 	ErrAdminBadRequest   = errors.New("请求参数错误")
 	ErrAdminNotFound     = errors.New("资源不存在")
 )
@@ -135,16 +138,35 @@ type AdminArticleInput struct {
 	SortOrder   int64  `json:"sortOrder"`
 }
 
-func (s *AdminService) GetSession(ctx context.Context, authorization string) (*AdminSession, error) {
-	_ = ctx
-	if strings.TrimSpace(authorization) == "" {
+func (s *AdminService) GetSession(ctx context.Context) (*AdminSession, error) {
+	userMeta := adaptor.ExtractUserMeta(ctx)
+	if userMeta.GetUserId() == "" {
 		return nil, ErrAdminUnauthorized
 	}
+
+	if adaptor.IsDevModeRequest(ctx) && userMeta.GetUserId() == appconsts.DevMockUserID {
+		return &AdminSession{
+			ID:     appconsts.DevMockUserID,
+			Name:   "演示管理员",
+			Avatar: "",
+			Phone:  "13800000000",
+			Role:   "admin",
+		}, nil
+	}
+
+	item, err := s.UserMapper.FindOne(ctx, userMeta.GetUserId())
+	if err != nil {
+		return nil, ErrAdminUnauthorized
+	}
+	if item.Role != "admin" || item.Status != 0 || !item.DeleteTime.IsZero() {
+		return nil, ErrAdminForbidden
+	}
+
 	return &AdminSession{
-		ID:     "admin",
-		Name:   "系统管理员",
-		Avatar: "",
-		Phone:  "",
+		ID:     item.ID.Hex(),
+		Name:   item.Name,
+		Avatar: item.Avatar,
+		Phone:  item.Phone,
 		Role:   "admin",
 	}, nil
 }
