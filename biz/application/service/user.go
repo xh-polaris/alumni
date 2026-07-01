@@ -11,6 +11,7 @@ import (
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/util"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -21,6 +22,7 @@ type IUserService interface {
 	UpdateUserInfo(ctx context.Context, req *core_api.UpdateUserInfoReq) (resp *core_api.Response, err error)
 	UpdateEducation(ctx context.Context, req *core_api.UpdateEducationReq) (resp *core_api.Response, err error)
 	GetUserInfo(ctx context.Context, req *core_api.GetUserInfoReq) (resp *core_api.GetUserInfoResp, err error)
+	ExchangeWxPhone(ctx context.Context, code string) (*core_api.ExchangeWxPhoneResp, error)
 }
 type UserService struct {
 	UserMapper *user.MongoMapper
@@ -343,4 +345,21 @@ func (u *UserService) GetUserInfo(ctx context.Context, req *core_api.GetUserInfo
 		Employments:        employments,
 	}
 	return resp, nil
+}
+
+func (u *UserService) ExchangeWxPhone(ctx context.Context, code string) (*core_api.ExchangeWxPhoneResp, error) {
+	_, err := u.findAuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	wxClient := util.NewWxClient()
+	phoneNumber, err := wxClient.GetPhoneNumber(code)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", consts.ErrWxPhoneExchange, err)
+	}
+
+	return &core_api.ExchangeWxPhoneResp{
+		PhoneNumber: phoneNumber,
+	}, nil
 }

@@ -17,10 +17,17 @@ type Auth struct {
 	AccessExpire int64
 }
 
+type Wx struct {
+	AppId     string
+	AppSecret string
+}
+
+
 type Config struct {
 	service.ServiceConf
 	ListenOn string
 	State    string
+	Wx       Wx
 	Auth     Auth
 	Mongo    struct {
 		URL string

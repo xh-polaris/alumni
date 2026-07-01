@@ -1,6 +1,9 @@
 package consts
 
+import "errors"
+
 var PageSize int64 = 10
+
 
 // 数据库相关
 const (
@@ -43,3 +46,5 @@ const (
 	DevModeHeader      = "X-Alumni-Mode"
 	DevModeValue       = "dev"
 )
+
+var ErrWxPhoneExchange = errors.New("微信手机号换取失败")

@@ -251,3 +251,19 @@ func SendVerifyCode(ctx context.Context, c *app.RequestContext) {
 	resp, err := p.StsService.SendVerifyCode(ctx, &req)
 	adaptor.PostProcess(ctx, c, &req, resp, err)
 }
+
+// ExchangeWxPhone .
+// @router /user/exchange_wx_phone [POST]
+func ExchangeWxPhone(ctx context.Context, c *app.RequestContext) {
+	var req struct {
+		Code string 
+	}
+	if err := c.BindAndValidate(&req); err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	p := provider.Get()
+	resp, err := p.UserService.ExchangeWxPhone(ctx, req.Code)
+	adaptor.PostProcess(ctx, c, &req, resp, err)
+}

@@ -34,6 +34,7 @@ func Register(r *server.Hertz) {
 	}
 	{
 		_user := root.Group("/user", _userMw()...)
+		_user.POST("/exchange_wx_phone", append(_userMw(), core_api.ExchangeWxPhone)...)
 		_user.GET("/info", append(_getuserinfoMw(), core_api.GetUserInfo)...)
 		_user.POST("/sign_in", append(_signinMw(), core_api.SignIn)...)
 		_user.POST("/sign_up", append(_signupMw(), core_api.SignUp)...)
