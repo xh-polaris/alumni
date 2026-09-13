@@ -20,6 +20,7 @@ type Article struct {
 	WechatURL     string             `bson:"wechat_url" json:"wechatUrl"`
 	Source        string             `bson:"source" json:"source"`
 	Author        string             `bson:"author" json:"author"`
+	ChapterID     string             `bson:"chapter_id" json:"chapterId"`
 	PublishTime   time.Time          `bson:"publish_time,omitempty" json:"publishTime"`
 	SortOrder     int64              `bson:"sort_order" json:"sortOrder"`
 	PublishStatus string             `bson:"publish_status" json:"publishStatus"`
@@ -27,4 +28,6 @@ type Article struct {
 	CreateTime    time.Time          `bson:"create_time,omitempty" json:"createTime"`
 	UpdateTime    time.Time          `bson:"update_time,omitempty" json:"updateTime"`
 	DeleteTime    time.Time          `bson:"delete_time,omitempty" json:"deleteTime"`
+	CreatedBy     string             `bson:"created_by" json:"createdBy"`
+	UpdatedBy     string             `bson:"updated_by" json:"updatedBy"`
 }

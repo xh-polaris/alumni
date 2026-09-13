@@ -5,6 +5,20 @@ import (
 	"time"
 )
 
+const (
+	MemberPending = "pending"
+	MemberAlumni  = "alumni"
+	MemberGuest   = "guest"
+
+	AdminNone    = "none"
+	AdminChapter = "chapter_admin"
+	AdminSuper   = "super_admin"
+
+	VerificationNone   = "none"
+	VerificationRoster = "roster"
+	VerificationManual = "manual"
+)
+
 type User struct {
 	ID                 primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Avatar             string             `bson:"avatar" json:"avatar"`
@@ -14,6 +28,16 @@ type User struct {
 	Phone              string             `bson:"phone" json:"phone"`
 	WxId               string             `bson:"wx_id" json:"wxId"`
 	Hometown           string             `bson:"hometown" json:"hometown"`
+	ChapterID          string             `bson:"chapter_id" json:"chapterId"`
+	GraduationYear     int64              `bson:"graduation_year" json:"graduationYear"`
+	BirthDate          string             `bson:"birth_date" json:"birthDate"`
+	MemberRole         string             `bson:"member_role" json:"memberRole"`
+	AdminRole          string             `bson:"admin_role" json:"adminRole"`
+	AdminChapterID     string             `bson:"admin_chapter_id" json:"adminChapterId"`
+	VerificationMethod string             `bson:"verification_method" json:"verificationMethod"`
+	VerifiedAt         time.Time          `bson:"verified_at,omitempty" json:"verifiedAt"`
+	VerifiedBy         string             `bson:"verified_by" json:"verifiedBy"`
+	Educations         []Education        `bson:"educations" json:"educations"`
 	HomeEducations     []Education        `bson:"home_educations" json:"homeEducations"`
 	ShanghaiEducations []Education        `bson:"shanghai_educations" json:"shanghaiEducations"`
 	Employments        []Employment       `bson:"employments" json:"employments"`
@@ -25,9 +49,13 @@ type User struct {
 }
 
 type Education struct {
-	Phase  string `bson:"phase" json:"phase"`
-	School string `bson:"school" json:"school"`
-	Year   int64  `bson:"year" json:"year"`
+	Phase        string `bson:"phase" json:"phase"`
+	School       string `bson:"school" json:"school"`
+	Year         int64  `bson:"year" json:"year"`
+	ProvinceCode string `bson:"province_code" json:"provinceCode"`
+	ProvinceName string `bson:"province_name" json:"provinceName"`
+	CityCode     string `bson:"city_code" json:"cityCode"`
+	CityName     string `bson:"city_name" json:"cityName"`
 }
 
 type Employment struct {
@@ -36,4 +64,8 @@ type Employment struct {
 	Industry     string `bson:"industry" json:"industry"`
 	Entry        int64  `bson:"entry" json:"entry"`
 	Departure    int64  `bson:"departure" json:"departure"`
+	ProvinceCode string `bson:"province_code" json:"provinceCode"`
+	ProvinceName string `bson:"province_name" json:"provinceName"`
+	CityCode     string `bson:"city_code" json:"cityCode"`
+	CityName     string `bson:"city_name" json:"cityName"`
 }

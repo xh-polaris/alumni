@@ -11,6 +11,7 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/monc"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -29,6 +30,16 @@ type IMongoMapper interface {
 	Count(ctx context.Context, activityId string) (count int64, err error)
 	FindAll(ctx context.Context, activityId string) (registers []*Register, total int64, err error)
 	FindByAidAndUid(ctx context.Context, activityId, uid string) (registers []*Register, total int64, err error)
+	EnsureIndexes(ctx context.Context) error
+}
+
+// EnsureIndexes 建立编号索引，供管理端按活动与分会筛选报名使用。
+func (m *MongoMapper) EnsureIndexes(ctx context.Context) error {
+	_, err := m.conn.Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{Keys: bson.D{{Key: "activity_id", Value: 1}, {Key: "status", Value: 1}}},
+		{Keys: bson.D{{Key: "chapter_id", Value: 1}}},
+	})
+	return err
 }
 
 type MongoMapper struct {
@@ -157,6 +168,7 @@ func (m *MongoMapper) FindAll(ctx context.Context, activityId string) (registers
 func (m *MongoMapper) Count(ctx context.Context, activityId string) (count int64, err error) {
 	count, err = m.conn.CountDocuments(ctx, bson.M{
 		consts.ActivityId: activityId,
+		"$or":             []bson.M{{"status": int64(0)}, {"status": bson.M{"$exists": false}}},
 	})
 	return count, err
 }
@@ -174,9 +186,7 @@ func (m *MongoMapper) FindByAidAndUid(ctx context.Context, activityId, uid strin
 		return nil, 0, err
 	}
 
-	total, err = m.conn.CountDocuments(ctx, bson.M{
-		consts.ActivityId: activityId,
-	})
+	total, err = m.conn.CountDocuments(ctx, bson.M{consts.ActivityId: activityId, consts.UserID: uid})
 	if err != nil {
 		return nil, 0, err
 	}

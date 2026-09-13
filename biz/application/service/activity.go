@@ -11,7 +11,9 @@ import (
 	"github.com/xh-polaris/alumni-core_api/biz/application/dto/alumni/core_api"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/activity"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/chapter"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/register"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
 )
 
 type IActivityService interface {
@@ -24,8 +26,10 @@ type IActivityService interface {
 	GetRegisters(ctx context.Context, req *core_api.GetRegistersReq) (resp *core_api.GetRegisterResp, err error)
 }
 type ActivityService struct {
-	ActivityMapper *activity.MongoMapper
-	RegisterMapper *register.MongoMapper
+	ActivityMapper activity.IMongoMapper
+	RegisterMapper register.IMongoMapper
+	UserMapper     user.IMongoMapper
+	ChapterMapper  chapter.IMongoMapper
 }
 
 var ActivityServiceSet = wire.NewSet(
@@ -190,6 +194,31 @@ func (s *ActivityService) RegisterActivity(ctx context.Context, req *core_api.Re
 	}
 	userId := userMeta.GetUserId()
 	activityId := req.ActivityId
+	currentUser, err := s.UserMapper.FindOne(ctx, userId)
+	if err != nil {
+		return nil, consts.ErrNotAuthentication
+	}
+	memberRole := effectiveMemberRole(currentUser)
+	if memberRole != user.MemberAlumni && memberRole != user.MemberGuest {
+		return nil, consts.ErrForbidden
+	}
+	act, err := s.ActivityMapper.FindById(ctx, activityId)
+	if err != nil || act.Status != 0 {
+		return nil, consts.ErrNotFound
+	}
+	now := time.Now()
+	if now.Before(act.RegisterStart) || now.After(act.RegisterEnd) {
+		return nil, consts.ErrForbidden
+	}
+	if act.Limit != -1 {
+		count, countErr := s.RegisterMapper.Count(ctx, activityId)
+		if countErr != nil {
+			return nil, consts.ErrCount
+		}
+		if count+int64(len(req.Items)) > act.Limit {
+			return nil, consts.ErrForbidden
+		}
+	}
 
 	failed := make([]string, 0)
 
@@ -201,6 +230,7 @@ func (s *ActivityService) RegisterActivity(ctx context.Context, req *core_api.Re
 		}
 		r := &register.Register{
 			ActivityId: activityId,
+			ChapterID:  act.ChapterID,
 			UserId:     userId,
 			Name:       name,
 			Phone:      phone,

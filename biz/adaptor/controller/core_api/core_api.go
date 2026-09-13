@@ -256,7 +256,7 @@ func SendVerifyCode(ctx context.Context, c *app.RequestContext) {
 // @router /user/exchange_wx_phone [POST]
 func ExchangeWxPhone(ctx context.Context, c *app.RequestContext) {
 	var req struct {
-		Code string 
+		Code string
 	}
 	if err := c.BindAndValidate(&req); err != nil {
 		c.String(consts.StatusBadRequest, err.Error())

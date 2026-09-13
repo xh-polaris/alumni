@@ -12,6 +12,7 @@ type Activity struct {
 	Location      string             `bson:"location" json:"location"`
 	ExactLocation string             `bson:"exact_location" json:"exactLocation"`
 	Sponsor       string             `bson:"sponsor" json:"sponsor"`
+	ChapterID     string             `bson:"chapter_id" json:"chapterId"`
 	Start         int64              `bson:"start" json:"start"`
 	Description   string             `bson:"description" json:"description"`
 	RegisterStart time.Time          `bson:"register_start" json:"registerStart"`
@@ -22,4 +23,6 @@ type Activity struct {
 	CreateTime    time.Time          `bson:"create_time,omitempty" json:"createTime"`
 	UpdateTime    time.Time          `bson:"update_time,omitempty" json:"updateTime"`
 	DeleteTime    time.Time          `bson:"delete_time,omitempty" json:"deleteTime"`
+	CreatedBy     string             `bson:"created_by" json:"createdBy"`
+	UpdatedBy     string             `bson:"updated_by" json:"updatedBy"`
 }

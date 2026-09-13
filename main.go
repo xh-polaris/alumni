@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/middlewares/server/recovery"
@@ -12,6 +13,7 @@ import (
 	prometheus "github.com/hertz-contrib/monitor-prometheus"
 	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/xh-polaris/alumni-core_api/biz/adaptor"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/util/log"
 	"github.com/xh-polaris/alumni-core_api/provider"
 	"github.com/xh-polaris/gopkg/hertz/middleware"
@@ -32,9 +34,16 @@ func main() {
 	c := provider.Get().Config
 
 	tracer, cfg := tracing.NewServerTracer()
+	metricsListenOn := strings.TrimSpace(c.MetricsListenOn)
+	if metricsListenOn == "" {
+		metricsListenOn = ":9091"
+	}
 	h := server.New(
 		server.WithHostPorts(c.ListenOn),
-		server.WithTracer(prometheus.NewServerTracer(":9091", "/server/metrics")),
+		// hertz 默认只允许 4MB 请求体，而图片上传/名册导入的上限更高；
+		// 这里按业务上限放大，否则文件会在进入 handler 之前被拒绝，错误信息也无法解释。
+		server.WithMaxRequestBodySize(consts.MaxRequestBodyBytes(provider.Get().UploadService.MaxBytes())),
+		server.WithTracer(prometheus.NewServerTracer(metricsListenOn, "/server/metrics")),
 		tracer,
 	)
 	h.Use(tracing.ServerMiddleware(cfg), middleware.EnvironmentMiddleware, recovery.Recovery(), func(ctx context.Context, c *app.RequestContext) {

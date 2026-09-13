@@ -11,9 +11,13 @@ import (
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/config"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/activity"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/article"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/birthday"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/chapter"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/register"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/roster"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/rpc/platform_sts"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/sms"
 )
 
 // Injectors from wire.go:
@@ -24,23 +28,34 @@ func NewProvider() (*Provider, error) {
 		return nil, err
 	}
 	mongoMapper := user.NewMongoMapper(configConfig)
+	chapterMongoMapper := chapter.NewMongoMapper(configConfig)
+	rosterMongoMapper := roster.NewMongoMapper(configConfig)
+	birthdayMongoMapper := birthday.NewMongoMapper(configConfig)
 	userService := service.UserService{
-		UserMapper: mongoMapper,
+		UserMapper:    mongoMapper,
+		ChapterMapper: chapterMongoMapper,
+		RosterMapper:  rosterMongoMapper,
 	}
 	activityMongoMapper := activity.NewMongoMapper(configConfig)
 	registerMongoMapper := register.NewMongoMapper(configConfig)
 	activityService := service.ActivityService{
 		ActivityMapper: activityMongoMapper,
 		RegisterMapper: registerMongoMapper,
+		UserMapper:     mongoMapper,
+		ChapterMapper:  chapterMongoMapper,
 	}
 	articleMongoMapper := article.NewMongoMapper(configConfig)
 	adminService := service.AdminService{
 		UserMapper:     mongoMapper,
 		RegisterMapper: registerMongoMapper,
 		ArticleMapper:  articleMongoMapper,
+		ActivityMapper: activityMongoMapper,
+		ChapterMapper:  chapterMongoMapper,
+		RosterMapper:   rosterMongoMapper,
 	}
 	articleService := service.ArticleService{
 		ArticleMapper: articleMongoMapper,
+		ChapterMapper: chapterMongoMapper,
 	}
 	client := platform_sts.NewPlatformSts(configConfig)
 	platformSts := &platform_sts.PlatformSts{
@@ -50,6 +65,16 @@ func NewProvider() (*Provider, error) {
 		PlatformSts: platformSts,
 		UserMapper:  mongoMapper,
 	}
+	platformSender := sms.NewPlatformSender(configConfig)
+	uploadService := service.UploadService{
+		Config: configConfig,
+	}
+	birthdayService := service.BirthdayService{
+		Config:         configConfig,
+		UserMapper:     mongoMapper,
+		BirthdayMapper: birthdayMongoMapper,
+		Sender:         platformSender,
+	}
 	providerProvider := &Provider{
 		Config:          configConfig,
 		UserService:     userService,
@@ -57,6 +82,11 @@ func NewProvider() (*Provider, error) {
 		AdminService:    adminService,
 		ArticleService:  articleService,
 		StsService:      stsService,
+		ChapterMapper:   chapterMongoMapper,
+		RosterMapper:    rosterMongoMapper,
+		BirthdayMapper:  birthdayMongoMapper,
+		BirthdayService: birthdayService,
+		UploadService:   uploadService,
 	}
 	return providerProvider, nil
 }

@@ -7,6 +7,8 @@ import (
 	handler "github.com/xh-polaris/alumni-core_api/biz/adaptor/controller"
 	admin "github.com/xh-polaris/alumni-core_api/biz/adaptor/controller/admin"
 	article "github.com/xh-polaris/alumni-core_api/biz/adaptor/controller/article"
+	portal "github.com/xh-polaris/alumni-core_api/biz/adaptor/controller/portal"
+	upload "github.com/xh-polaris/alumni-core_api/biz/adaptor/controller/upload"
 )
 
 // customizeRegister registers customize routers.
@@ -14,6 +16,16 @@ func customizedRegister(r *server.Hertz) {
 	r.GET("/ping", handler.Ping)
 	r.GET("/articles", article.ListArticles)
 	r.GET("/articles/:id", article.GetArticle)
+	r.GET("/chapters", portal.ListChapters)
+	r.POST("/upload", upload.Save)
+	r.GET("/files/*filepath", upload.Serve)
+	r.POST("/user/register", portal.Register)
+	r.GET("/user/profile", portal.GetProfile)
+	r.PATCH("/user/profile", portal.UpdateProfile)
+	r.PUT("/user/educations", portal.ReplaceEducations)
+	r.PUT("/user/employments", portal.ReplaceEmployments)
+	r.GET("/activities", portal.ListActivities)
+	r.GET("/activities/:id", portal.GetActivity)
 
 	adminGroup := r.Group("/admin", admin.RequireAuth())
 	adminGroup.GET("/session", admin.GetSession)
@@ -25,6 +37,18 @@ func customizedRegister(r *server.Hertz) {
 	adminGroup.PATCH("/users/:id/status", admin.SetUserStatus)
 	adminGroup.DELETE("/users/:id", admin.DeleteUser)
 	adminGroup.POST("/users/:id/restore", admin.RestoreUser)
+	adminGroup.GET("/activities", admin.ListActivities)
+	adminGroup.POST("/activities", admin.CreateActivity)
+	adminGroup.GET("/activities/:id", admin.GetActivity)
+	adminGroup.PATCH("/activities/:id", admin.UpdateActivity)
+	adminGroup.DELETE("/activities/:id", admin.DeleteActivity)
+	adminGroup.POST("/activities/:id/restore", admin.RestoreActivity)
+	adminGroup.GET("/chapters", admin.ListChapters)
+	adminGroup.PATCH("/chapters/:id/contact", admin.UpdateChapterContact)
+	adminGroup.GET("/admins", admin.ListAdmins)
+	adminGroup.POST("/admins/assign", admin.AssignAdmin)
+	adminGroup.GET("/roster", admin.ListRoster)
+	adminGroup.POST("/roster/import", admin.ImportRoster)
 
 	adminGroup.GET("/registrations", admin.ListRegistrations)
 	adminGroup.POST("/registrations", admin.CreateRegistration)

@@ -8,6 +8,7 @@ import (
 type Register struct {
 	Id          primitive.ObjectID `bson:"_id,omitempty" json:"id" `
 	ActivityId  string             `bson:"activity_id" json:"activityId" `
+	ChapterID   string             `bson:"chapter_id" json:"chapterId"`
 	UserId      string             `bson:"user_id" json:"userId" `
 	Name        string             `bson:"name" json:"name" `
 	Phone       string             `bson:"phone" json:"phone" `

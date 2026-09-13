@@ -9,6 +9,7 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/monc"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
@@ -23,7 +24,32 @@ type IMongoMapper interface {
 	Update(ctx context.Context, a *Activity) error
 	FindById(ctx context.Context, id string) (*Activity, error)
 	FindMany(ctx context.Context, p *basic.PaginationOptions) (activities []*Activity, total int64, err error)
+	FindManyByFilter(ctx context.Context, filter bson.M, skip, limit int64) (activities []*Activity, total int64, err error)
 	DeleteById(ctx context.Context, id string) error
+	EnsureIndexes(ctx context.Context) error
+}
+
+// EnsureIndexes 建立分会索引，供公开列表与管理端分会筛选使用。
+func (m *MongoMapper) EnsureIndexes(ctx context.Context) error {
+	_, err := m.conn.Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{Keys: bson.D{{Key: "chapter_id", Value: 1}, {Key: "status", Value: 1}}},
+		{Keys: bson.D{{Key: "start", Value: -1}}},
+	})
+	return err
+}
+
+func (m *MongoMapper) FindManyByFilter(ctx context.Context, filter bson.M, skip, limit int64) ([]*Activity, int64, error) {
+	items := make([]*Activity, 0, limit)
+	err := m.conn.Find(ctx, &items, filter, &options.FindOptions{
+		Skip:  &skip,
+		Limit: &limit,
+		Sort:  bson.D{{Key: "start", Value: -1}, {Key: consts.CreateTime, Value: -1}},
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	total, err := m.conn.CountDocuments(ctx, filter)
+	return items, total, err
 }
 
 type MongoMapper struct {

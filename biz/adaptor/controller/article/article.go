@@ -21,6 +21,7 @@ type response struct {
 func ListArticles(ctx context.Context, c *app.RequestContext) {
 	resp, err := provider.Get().ArticleService.ListPublicArticles(
 		ctx,
+		c.Query("chapterId"),
 		queryInt(c, "page", 1),
 		queryInt(c, "pageSize", 10),
 	)

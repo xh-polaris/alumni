@@ -4,14 +4,16 @@ import (
 	"context"
 	"strings"
 
+	"fmt"
 	"github.com/google/wire"
 	"github.com/jinzhu/copier"
 	"github.com/xh-polaris/alumni-core_api/biz/adaptor"
 	"github.com/xh-polaris/alumni-core_api/biz/application/dto/alumni/core_api"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/consts"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/chapter"
+	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/roster"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/mapper/user"
 	"github.com/xh-polaris/alumni-core_api/biz/infrastructure/util"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -25,7 +27,9 @@ type IUserService interface {
 	ExchangeWxPhone(ctx context.Context, code string) (*core_api.ExchangeWxPhoneResp, error)
 }
 type UserService struct {
-	UserMapper *user.MongoMapper
+	UserMapper    user.IMongoMapper
+	ChapterMapper chapter.IMongoMapper
+	RosterMapper  roster.IMongoMapper
 }
 
 var UserServiceSet = wire.NewSet(

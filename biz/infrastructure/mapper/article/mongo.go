@@ -9,6 +9,7 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/monc"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -17,6 +18,14 @@ const (
 	CollectionName    = "article"
 )
 
+type IMongoMapper interface {
+	Insert(ctx context.Context, a *Article) error
+	Update(ctx context.Context, a *Article) error
+	FindByID(ctx context.Context, id string) (*Article, error)
+	FindMany(ctx context.Context, filter bson.M, skip, limit int64) ([]*Article, int64, error)
+	EnsureIndexes(ctx context.Context) error
+}
+
 type MongoMapper struct {
 	conn *monc.Model
 }
@@ -24,6 +33,15 @@ type MongoMapper struct {
 func NewMongoMapper(config *config.Config) *MongoMapper {
 	conn := monc.MustNewModel(config.Mongo.URL, config.Mongo.DB, CollectionName, config.Cache)
 	return &MongoMapper{conn: conn}
+}
+
+// EnsureIndexes 建立分会与发布状态索引，供管理端与用户端筛选使用。
+func (m *MongoMapper) EnsureIndexes(ctx context.Context) error {
+	_, err := m.conn.Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{Keys: bson.D{{Key: "chapter_id", Value: 1}, {Key: "publish_status", Value: 1}}},
+		{Keys: bson.D{{Key: "deleted", Value: 1}}},
+	})
+	return err
 }
 
 func (m *MongoMapper) Insert(ctx context.Context, a *Article) error {
